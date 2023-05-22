@@ -1,5 +1,9 @@
 # Web-etc
 
+[![Lint](https://github.com/brandonrc/web-etc/actions/workflows/lint.yml/badge.svg)](https://github.com/brandonrc/web-etc/actions/workflows/lint.yml)
+[![Tests](https://github.com/brandonrc/web-etc/actions/workflows/tests.yml/badge.svg)](https://github.com/brandonrc/web-etc/actions/workflows/tests.yml)
+
+
 This application allows users to view and edit `.env` and `.json` configuration files in a specified directory. The directory to scan is specified by the `MY_APP_DIR` environment variable.
 
 ## Installation
