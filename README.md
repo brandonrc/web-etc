@@ -4,7 +4,7 @@ This application allows users to view and edit `.env` and `.json` configuration 
 
 ## Installation
 
-1. Clone this repository: `git clone https://github.com/username/web-etc.git`
+1. Clone this repository: `git clone https://github.com/brandonrc/web-etc.git`
 2. Navigate to the app directory: `cd web-etc`
 3. Install the application: `poetry install`
 4. Set the `MY_APP_DIR` environment variable to the directory you want to scan: `export MY_APP_DIR=/your/directory/path`
