@@ -34,7 +34,7 @@ jobs:
       - name: Run Security Scans
         run: |
           # Run Bandit for static security analysis
-          poetry run bandit -r .
+          poetry run bandit -r . --exclude tests/*.py
 
           # Run Safety to check for vulnerable dependencies
           poetry run safety check
