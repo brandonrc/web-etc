@@ -1,0 +1,13 @@
+[Unit]
+Description=Web-etc
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/uvicorn web_etc.main:app --host 0.0.0.0 --port 8000
+WorkingDirectory=/path/to/your/web-etc/directory
+User=yourusername
+Group=yourgroup
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
