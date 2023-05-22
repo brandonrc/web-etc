@@ -10,6 +10,15 @@ This application allows users to view and edit `.env` and `.json` configuration 
 4. Set the `MY_APP_DIR` environment variable to the directory you want to scan: `export MY_APP_DIR=/your/directory/path`
 5. Run the application: `uvicorn web_etc.main:app`
 
+## Running Tests
+
+The application includes tests to ensure its functionality is working correctly. You can use Poetry to run these tests.
+
+1. Install dev dependencies: `poetry install --dev`
+2. Run the tests: `poetry run pytest`
+
+The above command will automatically discover and run the tests located in the `tests/` directory. You should see the test results displayed in the terminal.
+
 ## Running as a Systemd Service
 
 If you want to run this application as a systemd service, you can use the provided service file (`web-etc.service`). Here are the steps to do that:
