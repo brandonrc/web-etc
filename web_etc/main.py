@@ -14,8 +14,12 @@ load_dotenv()
 # defaulting to /usr/local/etc if the variable is not set
 dir = os.getenv("MY_APP_DIR", "/usr/local/etc")
 
-ORIGINAL_VALUES_LOG_PATH = os.path.join(dir, 'original_values_log.json')
+HOME_DIR = os.path.expanduser("~")
+CACHE_DIR = os.path.join(HOME_DIR, ".cache", "web_etc")
+ORIGINAL_VALUES_LOG_PATH = os.path.join(CACHE_DIR, 'original_values_log.json')
 
+# You may want to create the directory if it does not exist
+os.makedirs(CACHE_DIR, exist_ok=True)
 
 app = FastAPI()
 # Specify the directory where the Jinja2 templates are located
