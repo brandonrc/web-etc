@@ -14,6 +14,9 @@ load_dotenv()
 # defaulting to /usr/local/etc if the variable is not set
 dir = os.getenv("MY_APP_DIR", "/usr/local/etc")
 
+ORIGINAL_VALUES_LOG_PATH = os.path.join(dir, 'original_values_log.json')
+
+
 app = FastAPI()
 # Specify the directory where the Jinja2 templates are located
 templates_dir = pkg_resources.resource_filename('web_etc', 'templates')
@@ -73,8 +76,14 @@ async def update_env(request: Request):
     file_path = form_data.get('file_path')
     key = form_data.get('key')
     value = form_data.get('value')
-    """Update an environment variable in a .env or .json file."""
-    # Logging the received form data for debugging
+
+    # Load the original values log or create a new one if it doesn't exist
+    try:
+        with open(ORIGINAL_VALUES_LOG_PATH, 'r') as log_file:
+            original_values_log = json.load(log_file)
+    except FileNotFoundError:
+        original_values_log = {}
+
     logger.debug(f"Received form data: file_path={file_path}, key={key}, value={value}")
 
     try:
@@ -88,6 +97,9 @@ async def update_env(request: Request):
                 for line in lines:
                     # If the line starts with the environment variable key, replace the line with the updated value
                     if line.startswith(key + '='):
+                        # Log the original value if it's not already logged
+                        if key not in original_values_log:
+                            original_values_log[key] = line[len(key + '='):].strip()
                         file.write(key + '=' + value + '\n')
                     else:
                         file.write(line)
@@ -98,12 +110,71 @@ async def update_env(request: Request):
                 json_dict = json.load(json_file)
             # Update the value of the environment variable in the dictionary
             json_dict[key] = value
+            # Log the original value if it's not already logged
+            if key not in original_values_log:
+                original_values_log[key] = json_dict[key]
             # Open the file again to write the updated JSON
             with open(file_path, 'w') as json_file:
                 json.dump(json_dict, json_file)
+
+        # Write the updated original values log to the file
+        with open(ORIGINAL_VALUES_LOG_PATH, 'w') as log_file:
+            json.dump(original_values_log, log_file)
 
         # Return the updated list of environment variables
         return await read_env(request)
     except Exception as e:
         logger.error(f"Error updating env: {e}")
+        raise
+
+@app.get("/reset_defaults", response_class=HTMLResponse)
+async def reset_defaults(request: Request):
+    """Reset all environment variables to their original values using the log."""
+
+    # Load the original values log
+    try:
+        with open(ORIGINAL_VALUES_LOG_PATH, 'r') as log_file:
+            original_values_log = json.load(log_file)
+    except FileNotFoundError:
+        logger.error(f"Original values log file not found at {ORIGINAL_VALUES_LOG_PATH}")
+        raise
+
+    logger.debug(f"Resetting all environment variables to their original values")
+
+    try:
+        # Recursively scan the directory
+        for root, dirs, files in os.walk(dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                # If the file is a .env file
+                if file.endswith('.env'):
+                    # Open the file and read all the lines
+                    with open(file_path, 'r') as file:
+                        lines = file.readlines()
+                    # Open the file again to write the updated lines
+                    with open(file_path, 'w') as file:
+                        for line in lines:
+                            # If the line starts with an environment variable key that is in the log, replace the line with the original value
+                            for key, original_value in original_values_log.items():
+                                if line.startswith(key + '='):
+                                    file.write(key + '=' + original_value + '\n')
+                                else:
+                                    file.write(line)
+                # If the file is a .json file
+                elif file.endswith('.json'):
+                    # Open the file and load the JSON into a dictionary
+                    with open(file_path, 'r') as json_file:
+                        json_dict = json.load(json_file)
+                    # Restore the original value of each environment variable that is in the log
+                    for key, original_value in original_values_log.items():
+                        if key in json_dict:
+                            json_dict[key] = original_value
+                    # Open the file again to write the updated JSON
+                    with open(file_path, 'w') as json_file:
+                        json.dump(json_dict, json_file)
+
+        # Return the updated list of environment variables
+        return await read_env(request)
+    except Exception as e:
+        logger.error(f"Error resetting env variables to default: {e}")
         raise

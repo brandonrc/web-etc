@@ -22,6 +22,7 @@
             </form>
         {% endif %}
     {% endfor %}
+    <button id="reset-button">Reset</button>
     <script>
         // Add event listeners to change the color of modified text
         document.querySelectorAll('input[type=text]').forEach(function(input) {
@@ -50,6 +51,22 @@
                     }
                 });
             });
+        });
+
+        // Add an event listener to the reset button
+        document.querySelector('#reset-button').addEventListener('click', function() {
+            if (confirm('Are you sure you want to reset all changes?')) {
+                fetch('/reset_defaults', {
+                    method: 'GET'
+                }).then(function(response) {
+                    if (response.ok) {
+                        alert('All changes have been reset.');
+                        location.reload();
+                    } else {
+                        alert('An error occurred while resetting changes.');
+                    }
+                });
+            }
         });
     </script>
 </body>
