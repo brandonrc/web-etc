@@ -6,7 +6,7 @@ authors = ["Brandon Geraci <brandon.geraci@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-fastapi = "^0.68.2"
+fastapi = "^0.95.2"
 python-multipart = "^0.0.5"
 python-dotenv = "^0.19.2"
 uvicorn = "^0.15.0"
@@ -21,3 +21,4 @@ httpx = "^0.20.0"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+include = ["web_etc/templates/*.html"]

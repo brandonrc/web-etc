@@ -1,37 +1,7 @@
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>Env Variables</title>
-    <script>
-        // Add event listeners to change the color of modified text
-        document.querySelectorAll('input[type=text]').forEach(function(input) {
-            input.addEventListener('input', function() {
-                input.style.color = 'red';
-            });
-        });
-    
-        // Modify the form submission function
-        document.querySelector('form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            fetch('/update', {
-                method: 'POST',
-                body: new FormData(event.target)
-            }).then(function(response) {
-                if (response.ok) {
-                    // Show a confirmation popup when the server responds that the file has been updated
-                    alert('File successfully updated!');
-                    // Reset the text color
-                    document.querySelectorAll('input[type=text]').forEach(function(input) {
-                        input.style.color = 'black';
-                    });
-                } else {
-                    alert('An error occurred while updating the file.');
-                }
-            });
-        });
-    </script>
-    
 </head>
 <body>
     <form action="/" method="get">
@@ -44,11 +14,43 @@
             <form action="/update" method="post">
                 <input type="hidden" name="file_path" value="{{ file_path }}">
                 {% for key, value in env_dict.items() %}
+                    <input type="hidden" name="key" value="{{ key }}">
+                    <input type="hidden" name="value" value="{{ value }}">
                     <p>{{ key }}: <input type="text" name="{{ key }}" value="{{ value }}"></p>
                 {% endfor %}
                 <button type="submit">Save</button>
             </form>
         {% endif %}
     {% endfor %}
+    <script>
+        // Add event listeners to change the color of modified text
+        document.querySelectorAll('input[type=text]').forEach(function(input) {
+            input.addEventListener('input', function() {
+                input.style.color = 'red';
+            });
+        });
+    
+        // Modify the form submission function
+        document.querySelectorAll('form[action="/update"]').forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                fetch('/update', {
+                    method: 'POST',
+                    body: new FormData(event.target)
+                }).then(function(response) {
+                    if (response.ok) {
+                        // Show a confirmation popup when the server responds that the file has been updated
+                        alert('File successfully updated!');
+                        // Reset the text color
+                        document.querySelectorAll('input[type=text]').forEach(function(input) {
+                            input.style.color = 'black';
+                        });
+                    } else {
+                        alert('An error occurred while updating the file.');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
