@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 - Added pam in the pyproject.toml file.
 - Changed Python version in the pyproject.toml file from 3.9 to 3.8.
 
-## [0.1.0] - 2023-06-02
+## [0.1.0] - 2023-05-22
 ### Added
 - Initial project setup.
 - FastAPI server with endpoints for reading and updating environment variables.
