@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, RedirectResponse, status
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from dotenv import dotenv_values, load_dotenv
@@ -6,6 +6,7 @@ import logging
 import json
 import pkg_resources
 import os
+import pam
 
 # Load environment variables from .env file
 load_dotenv()
@@ -26,6 +27,24 @@ app = FastAPI()
 templates_dir = pkg_resources.resource_filename('web_etc', 'templates')
 templates = Jinja2Templates(directory=templates_dir)
 print(templates)
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_form(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@app.post("/login")
+async def login(request: Request, username: str = Form(...), password: str = Form(...)):
+    p = pam.pam()
+    authenticated = p.authenticate(username, password)
+    if authenticated:
+        # User is authenticated
+        # Redirect to the main page
+        return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+    else:
+        # Authentication failed
+        # Return the login page with an error message
+        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid username or password"})
+
 
 @app.get("/", response_class=HTMLResponse)
 async def read_env(request: Request, search: str = ""):
