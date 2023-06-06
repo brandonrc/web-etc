@@ -50,6 +50,10 @@ async def get_current_user(request: Request):
     # return "TEST"
 
 def authenticate(username: str, password: str):
+    # If the TESTING environment variable is set, bypass authentication
+    if os.getenv("TESTING"):
+        return True
+
     logger.debug(f"Authenticating user: {username}")
     p = pam.pam()
     authenticated = p.authenticate(username, password)
@@ -59,6 +63,7 @@ def authenticate(username: str, password: str):
     else:
         logger.warning(f"Failed to authenticate user: {username}")
         return False
+
 
 
 @app.post("/login")

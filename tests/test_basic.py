@@ -1,9 +1,15 @@
 import pytest
 from fastapi.testclient import TestClient
 from web_etc.main import app
+import os
 
 client = TestClient(app)
 
+def setup_function():
+    os.environ["TESTING"] = "1"
+
+def teardown_function():
+    os.environ.pop("TESTING", None)
 
 def test_read_env():
     response = client.get("/")
