@@ -1,6 +1,8 @@
-from fastapi import FastAPI, Request, Form, RedirectResponse, status
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request, Form, status, Response
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi import Depends, HTTPException
 from dotenv import dotenv_values, load_dotenv
 import logging
 import json
@@ -28,26 +30,68 @@ templates_dir = pkg_resources.resource_filename('web_etc', 'templates')
 templates = Jinja2Templates(directory=templates_dir)
 print(templates)
 
-@app.get("/login", response_class=HTMLResponse)
-async def login_form(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
 
-@app.post("/login")
-async def login(request: Request, username: str = Form(...), password: str = Form(...)):
+
+security = HTTPBasic()
+
+@app.middleware("http")
+async def debug_middleware(request: Request, call_next):
+    print(request.cookies)
+    response = await call_next(request)
+    return response
+
+async def get_current_user(request: Request):
+    print(request)
+    print("+++++++++")
+    session_token = request.cookies.get("session")
+    print(session_token)
+    print("==================")
+    return session_token
+    # return "TEST"
+
+def authenticate(username: str, password: str):
+    logger.debug(f"Authenticating user: {username}")
     p = pam.pam()
     authenticated = p.authenticate(username, password)
     if authenticated:
-        # User is authenticated
-        # Redirect to the main page
-        return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+        logger.debug(f"User {username} authenticated successfully.")
+        return True
     else:
-        # Authentication failed
-        # Return the login page with an error message
-        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid username or password"})
+        logger.warning(f"Failed to authenticate user: {username}")
+        return False
+
+
+@app.post("/login")
+async def login(username: str = Form(...), password: str = Form(...)):
+    logger.debug(f"Login attempt with username: {username}")
+    user = authenticate(username, password)
+    if not user:
+        logger.warning(f"Incorrect username or password for username: {username}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+        )
+    logger.debug(f"Successful login for username: {username}. Setting session cookie.")
+    session_token = "sessiontoken"
+    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+    response.set_cookie(key="session", value=session_token, httponly=True)
+    return response
+
+
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_form(request: Request, current_user: str = Depends(get_current_user)):
+    if current_user:
+        return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+    return templates.TemplateResponse("login.html", {"request": request})
 
 
 @app.get("/", response_class=HTMLResponse)
-async def read_env(request: Request, search: str = ""):
+async def read_env(request: Request, search: str = "", current_user: str = Depends(get_current_user)):
+    print(current_user)
+    print("------------")
+    if not current_user:
+        return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
     """Return a list of environment variables in .env and .json files in the specified directory."""
 
     # Dictionary to store file paths and their environment variables
