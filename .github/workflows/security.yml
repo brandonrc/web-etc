@@ -23,10 +23,14 @@ jobs:
           python-version: 3.9
 
       - name: Install Poetry
-        run: curl -sSL https://install.python-poetry.org | python3 -
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Install project dependencies
-        run: poetry install
+        run: |
+          poetry config virtualenvs.in-project true
+          poetry install
 
       - name: Install Bandit
         run: pip install bandit
@@ -34,9 +38,7 @@ jobs:
       - name: Run Security Scans
         run: |
           # Run Bandit for static security analysis
-          poetry run bandit -r . --exclude tests/*.py
+          poetry run bandit -r . --exclude .venv/,./env/,./tests/
 
           # Run Safety to check for vulnerable dependencies
           poetry run safety check
-
-      # Add additional steps as needed for other security testing tools or checks
