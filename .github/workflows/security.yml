@@ -38,6 +38,9 @@ jobs:
       - name: Install Bandit
         run: pip install bandit
 
+      - name: Upgrade vulnerable packages
+        run: pip install --upgrade setuptools
+
       - name: Run Security Scans
         run: |
           # Run Bandit for static security analysis
