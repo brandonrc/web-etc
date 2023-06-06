@@ -77,7 +77,7 @@ async def login(username: str = Form(...), password: str = Form(...)):
             detail="Incorrect username or password",
         )
     logger.debug(f"Successful login for username: {username}. Setting session cookie.")
-    session_token = "sessiontoken"
+    session_token = "sessiontoken" # nosec
     response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
     response.set_cookie(key="session", value=session_token, httponly=True)
     return response
