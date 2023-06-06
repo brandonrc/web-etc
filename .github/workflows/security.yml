@@ -32,6 +32,9 @@ jobs:
           poetry config virtualenvs.in-project true
           poetry install
 
+      - name: Install Safety
+        run: pip install safety
+
       - name: Install Bandit
         run: pip install bandit
 
