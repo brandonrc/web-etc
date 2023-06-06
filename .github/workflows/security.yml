@@ -38,7 +38,7 @@ jobs:
       - name: Run Security Scans
         run: |
           # Run Bandit for static security analysis
-          poetry run bandit -r . --exclude .venv/,./env/,./tests/
+          poetry run bandit -r . --exclude ./.venv/,./env/,./tests/
 
           # Run Safety to check for vulnerable dependencies
           poetry run safety check
