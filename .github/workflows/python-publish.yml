@@ -1,4 +1,3 @@
-# SOURCE: https://github.com/marketplace/actions/pypi-poetry-publish
 name: Build and publish python package
 
 on:
@@ -11,9 +10,19 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Publish PyPi package
-        uses: code-specialist/pypi-poetry-publish@v1
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
-          BRANCH: main
-          ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PUBLISH_REGISTRY_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+          python-version: 3.11.2  # Or whatever version you want to use
+
+      - name: Install poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+
+      - name: Build and publish package
+        run: |
+          poetry build
+          poetry publish --username __token__ --password ${{ secrets.PYPI_TOKEN }}
